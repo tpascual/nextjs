@@ -1,0 +1,68 @@
+name: next
+recipe: lamp
+config:
+  php: '7.4'
+  webroot: .
+  database: mysql:8.0
+  xdebug: true
+  ssl: true
+proxy:
+  appserver:
+    - web.auto.next.site
+  database:
+    - db.auto.next.site
+  mailhog:
+    - mail.auto.next.site
+  pma:
+    - pma.auto.next.site
+  node:
+    - node.auto.next.site
+services:
+  appserver:
+    build_as_root:
+      - a2enmod headers
+      - a2enmod rewrite
+      - service apache2 reload
+    run_as_root:
+      - "chown www-data: -R /app"
+  database:
+    portforward: 3306
+    creds:
+      user: lamp
+      password: lamp
+      database: lamp
+    authentication: caching_sha2_password
+  mailhog:
+    type: mailhog
+    hogfrom:
+      - appserver
+    portforward: 1026
+  pma:
+    type: phpmyadmin
+    hosts: database
+  node:
+    type: node:14
+    overrides:
+      ports:
+        - 3000:3000
+        - 5000:5000
+    globals:
+      npm: "latest"
+      gulp-cli: "latest"
+tooling:
+  node:
+    service: node
+  npm:
+    service: node
+  npx:
+    service: node
+  gulp:
+    service: node
+  next:
+    service: node
+  yarn:
+    service: node
+  composer:
+    service: appserver
+  dep:
+    service: appserver
